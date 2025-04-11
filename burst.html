@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixelated Blast Effect</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+        }
+        
+        #canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            width: 400px;
+            height: 400px;
+            border: 1px solid #444;
+            background-color: #000;
+        }
+        
+        button {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="100" height="100"></canvas>
+    <button id="trigger">Trigger Blast</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const triggerButton = document.getElementById('trigger');
+
+        // Clear canvas with black background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Define colors for the blast
+        const colors = {
+            white: '#FFFFFF',
+            yellow: '#FFFF00',
+            orange: '#FFA500',
+            red: '#FF0000',
+            darkRed: '#8B0000'
+        };
+
+        // Blast animation frames
+        const blastFrames = [
+            // Frame 1: Initial small burst
+            [
+                '    XXX    ',
+                '   XXXXX   ',
+                '  XXXXXXX  ',
+                ' XXXXXXXXX ',
+                'XXXXXXXXXXX',
+                'XXXXXXXXXXX',
+                'XXXXXXXXXXX',
+                ' XXXXXXXXX ',
+                '  XXXXXXX  ',
+                '   XXXXX   ',
+                '    XXX    '
+            ],
+            // Frame 2: Expanding
+            [
+                '   YYYYY   ',
+                '  YYYYYYY  ',
+                ' YYYYYYYYY ',
+                'YYYYYYYYYYY',
+                'YYYYYYYYYYY',
+                'YYYYYYYYYYY',
+                'YYYYYYYYYYY',
+                'YYYYYYYYYYY',
+                ' YYYYYYYYY ',
+                '  YYYYYYY  ',
+                '   YYYYY   '
+            ],
+            // Frame 3: Peak explosion
+            [
+                '  OOOOOOO  ',
+                ' OOOOOOOOO ',
+                'OOOOOOOOOOO',
+                'OOOOOOOOOOO',
+                'OOOOOOOOOOO',
+                'OOOOOOOOOOO',
+                'OOOOOOOOOOO',
+                'OOOOOOOOOOO',
+                'OOOOOOOOOOO',
+                ' OOOOOOOOO ',
+                '  OOOOOOO  '
+            ],
+            // Frame 4: Starting to dissipate
+            [
+                ' R       R ',
+                'R         R',
+                '           ',
+                'R         R',
+                '     R     ',
+                'R         R',
+                '           ',
+                'R         R',
+                '           ',
+                'R         R',
+                ' R       R '
+            ],
+            // Frame 5: Final particles
+            [
+                'D         D',
+                '           ',
+                '     D     ',
+                '           ',
+                'D         D',
+                '           ',
+                'D         D',
+                '           ',
+                '     D     ',
+                '           ',
+                'D         D'
+            ]
+        ];
+
+        // Pixel mapping
+        const pixelMap = {
+            'X': colors.white,
+            'Y': colors.yellow,
+            'O': colors.orange,
+            'R': colors.red,
+            'D': colors.darkRed
+        };
+
+        // Animation state
+        let isAnimating = false;
+        let currentFrame = 0;
+        let animationTimer = null;
+
+        // Draw a frame of the blast
+        function drawBlastFrame(frameIndex, x, y, size) {
+            const frame = blastFrames[frameIndex];
+            const pixelSize = size / frame.length;
+
+            for (let row = 0; row < frame.length; row++) {
+                for (let col = 0; col < frame[row].length; col++) {
+                    const pixel = frame[row][col];
+                    if (pixel === ' ') continue;
+
+                    ctx.fillStyle = pixelMap[pixel];
+                    ctx.fillRect(
+                        x + col * pixelSize,
+                        y + row * pixelSize,
+                        pixelSize,
+                        pixelSize
+                    );
+                }
+            }
+        }
+
+        // Animate the blast
+        function animateBlast(x, y, size) {
+            if (isAnimating) return;
+
+            isAnimating = true;
+            currentFrame = 0;
+
+            function nextFrame() {
+                // Clear the blast area
+                ctx.fillStyle = '#000';
+                ctx.fillRect(x, y, size, size);
+
+                if (currentFrame < blastFrames.length) {
+                    drawBlastFrame(currentFrame, x, y, size);
+                    currentFrame++;
+                    animationTimer = setTimeout(nextFrame, 100);
+                } else {
+                    isAnimating = false;
+                }
+            }
+
+            nextFrame();
+        }
+
+        // Create particles that fly outward
+        function createParticles(x, y, size) {
+            const particles = [];
+            const particleCount = 20;
+
+            for (let i = 0; i < particleCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 2 + 1;
+                const life = Math.random() * 20 + 10;
+
+                particles.push({
+                    x: x + size / 2,
+                    y: y + size / 2,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: Math.random() * 3 + 1,
+                    life: life,
+                    maxLife: life,
+                    color: Object.values(colors)[Math.floor(Math.random() * Object.values(colors).length)]
+                });
+            }
+
+            let particleTimer = 0;
+
+            function animateParticles() {
+                particleTimer++;
+
+                // Clear the canvas
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                let alive = false;
+
+                // Update and draw particles
+                for (const particle of particles) {
+                    if (particle.life <= 0) continue;
+
+                    alive = true;
+                    particle.life--;
+
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+
+                    // Fade out based on remaining life
+                    const alpha = particle.life / particle.maxLife;
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = particle.color;
+
+                    // Draw pixelated particle
+                    const particleSize = Math.max(1, Math.floor(particle.size));
+                    ctx.fillRect(
+                        Math.floor(particle.x),
+                        Math.floor(particle.y),
+                        particleSize,
+                        particleSize
+                    );
+                }
+
+                ctx.globalAlpha = 1;
+
+                if (alive && particleTimer < 60) {
+                    requestAnimationFrame(animateParticles);
+                }
+            }
+
+            animateParticles();
+        }
+
+        // Handle button click
+        triggerButton.addEventListener('click', () => {
+            // Center the blast in the canvas
+            const blastSize = 50;
+            const x = (canvas.width - blastSize) / 2;
+            const y = (canvas.height - blastSize) / 2;
+
+            animateBlast(x, y, blastSize);
+            createParticles(x, y, blastSize);
+        });
+
+        // Function to create a blast effect that can be used in the game
+        function createBlastEffect() {
+            const blastCanvas = document.createElement('canvas');
+            blastCanvas.width = 50;
+            blastCanvas.height = 50;
+            const blastCtx = blastCanvas.getContext('2d');
+
+            // Pre-render all frames
+            const frames = [];
+
+            for (let i = 0; i < blastFrames.length; i++) {
+                const frameCanvas = document.createElement('canvas');
+                frameCanvas.width = 50;
+                frameCanvas.height = 50;
+                const frameCtx = frameCanvas.getContext('2d');
+
+                // Draw the frame
+                const frame = blastFrames[i];
+                const pixelSize = 50 / frame.length;
+
+                for (let row = 0; row < frame.length; row++) {
+                    for (let col = 0; col < frame[row].length; col++) {
+                        const pixel = frame[row][col];
+                        if (pixel === ' ') continue;
+
+                        frameCtx.fillStyle = pixelMap[pixel];
+                        frameCtx.fillRect(
+                            col * pixelSize,
+                            row * pixelSize,
+                            pixelSize,
+                            pixelSize
+                        );
+                    }
+                }
+
+                frames.push(frameCanvas);
+            }
+
+            return frames;
+        }
+
+        // Example of how to use in game:
+        /*
+        // In your game initialization:
+        const blastFrames = createBlastEffect();
+        
+        // When an enemy is hit:
+        function enemyHit(enemy) {
+            // Create explosion at enemy position
+            explosions.push({
+                x: enemy.x,
+                y: enemy.y,
+                frame: 0,
+                maxFrames: blastFrames.length
+            });
+        }
+        
+        // In your draw function:
+        explosions.forEach((explosion, index) => {
+            if (explosion.frame < explosion.maxFrames) {
+                ctx.drawImage(
+                    blastFrames[explosion.frame], 
+                    explosion.x, 
+                    explosion.y, 
+                    40, 
+                    40
+                );
+                explosion.frame++;
+            } else {
+                explosions.splice(index, 1);
+            }
+        });
+        */
+    </script>
+</body>
+
+</html>

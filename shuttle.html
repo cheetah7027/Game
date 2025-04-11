@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixelated Space Shuttle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #222;
+        }
+        
+        #canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            width: 400px;
+            height: 400px;
+            border: 1px solid #444;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="100" height="100"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Clear canvas with black background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Define pixel size (larger for better visibility)
+        const pixelSize = 2;
+        
+        // Define colors
+        const colors = {
+            transparent: null,
+            white: '#FFFFFF',
+            red: '#FF3333',
+            darkRed: '#CC2222',
+            cream: '#FFDDCC',
+            orange: '#FFAA22',
+            yellow: '#FFFF00',
+            fire: '#FF6600'
+        };
+        
+        // Shuttle design (pixel art) - made more symmetric
+        const shuttleDesign = [
+            '                  X                   ',
+            '                 XXX                  ',
+            '                XXXXX                 ',
+            '               RRXXXRR                ',
+            '              RRRXXXRRR               ',
+            '             RRRRXXXRRRR              ',
+            '            CCCCCXXXCCCCC             ',
+            '            CCCCCXXXCCCCC             ',
+            '            CCCCCXXXCCCCC             ',
+            '           CCCCCCXXXCCCCCC            ',
+            '           CCCCCCXXXCCCCCC            ',
+            '          CCCCCCCXXXCCCCCCC           ',
+            '          CCCCCCCXXXCCCCCCC           ',
+            '         CCCCCCCCXXXCCCCCCCC          ',
+            '         CCCCCCCCXXXCCCCCCCC          ',
+            '        CCCCCCCCCXXXCCCCCCCCC         ',
+            '        CCCCCCCCCXXXCCCCCCCCC         ',
+            '       CCCCCCCCCCXXXCCCCCCCCCC        ',
+            '       CCCCCCCCCCXXXCCCCCCCCCC        ',
+            '      CCCCCCCCCCCXXXCCCCCCCCCCC       ',
+            '      CCCCCCCCCCCXXXCCCCCCCCCCC       ',
+            '     CCCCCCCCCCCCXXXCCCCCCCCCCCC      ',
+            '     CCCCCCCCCCCCXXXCCCCCCCCCCCC      ',
+            '    CCCCCCCCCCCCCXXXCCCCCCCCCCCCC     ',
+            '   RCCCCCCCCCCCCCCCCCCCCCCCCCCCCR     ',
+            '  RRRCCCCCCCCCCCCCCCCCCCCCCCCCCCRRR   ',
+            ' RRRRRCCCCCCCCCCCCCCCCCCCCCCCCCRRRRRR ',
+            'RRRRRRRCCCCCCCCCCCCCCCCCCCCCCCRRRRRRRR',
+            'RRRRRRRRCCCCCCCCCCCCCCCCCCCCCRRRRRRRRR',
+            'RRRRRRRRRCCCCCCCCCCCCCCCCCCCRRRRRRRRRR',
+            'RRRRRRRRRRCCCCCCCCCCCCCCCCCRRRRRRRRRRR',
+            'RRRRRRRRRRRCCCCCCCCCCCCCCCRRRRRRRRRRRR',
+            'RRRRRRRRRRRRCCCCCCCCCCCCCRRRRRRRRRRRRR',
+            'RRRRRRRRRRRRRCCCCCCCCCCCRRRRRRRRRRRRRR',
+            'RRRRRRRRRRRRRRCCCCCCCCCRRRRRRRRRRRRRRR',
+            'RRRRRRRRRRRRRRRCCCCCCCRRRRRRRRRRRRRRRR',
+            '        CCCCCCCCCCCCCCCCCCC           ',
+            '        CCCCCCCCCCCCCCCCCCC           ',
+            '        CCCCCCCCCCCCCCCCCCC           ',
+            '        CCCCCCCCCCCCCCCCCCC           ',
+            '         FFFF         FFFF            ',
+            '        FFFFFF       FFFFFF           ',
+            '        OOOOOO       OOOOOO           ',
+            '       YYYYYYY     YYYYYYY           ',
+            '      YYYYYYYY     YYYYYYYY          ',
+            '     YYYYYYYYY     YYYYYYYYY         ',
+            '      YYYYYYY       YYYYYYY          ',
+            '       YYYYY         YYYYY           '
+        ];
+        
+        // Enhanced animation function with larger exhaust
+        function animateThrusters() {
+            const thrusterRows = [40, 41, 42, 43, 44, 45, 46, 47];
+            let frame = 0;
+            
+            setInterval(() => {
+                // Redraw only the thruster area
+                const offsetX = Math.floor((canvas.width - shuttleDesign[0].length * pixelSize) / 2);
+                const offsetY = Math.floor((canvas.height - shuttleDesign.length * pixelSize) / 2);
+                
+                // Clear the thruster area first
+                ctx.fillStyle = '#000';
+                ctx.fillRect(
+                    offsetX, 
+                    offsetY + 40 * pixelSize,
+                    shuttleDesign[0].length * pixelSize,
+                    8 * pixelSize
+                );
+                
+                for (let y of thrusterRows) {
+                    for (let x = 0; x < shuttleDesign[y].length; x++) {
+                        const pixel = shuttleDesign[y][x];
+                        let color = null;
+                        
+                        if (pixel === 'F' || pixel === 'O' || pixel === 'Y') {
+                            // More dynamic color animation
+                            if (frame % 4 === 0) {
+                                color = pixel === 'F' ? colors.fire : 
+                                       pixel === 'O' ? colors.orange : 
+                                       colors.yellow;
+                            } else if (frame % 4 === 1) {
+                                color = pixel === 'F' ? colors.orange : 
+                                       pixel === 'O' ? colors.yellow : 
+                                       colors.fire;
+                            } else if (frame % 4 === 2) {
+                                color = pixel === 'F' ? colors.yellow : 
+                                       pixel === 'O' ? colors.fire : 
+                                       colors.orange;
+                            } else {
+                                color = pixel === 'F' ? colors.fire : 
+                                       pixel === 'O' ? colors.orange : 
+                                       colors.yellow;
+                            }
+                            
+                            // Random flicker effect
+                            if (Math.random() > 0.7) {
+                                // Occasionally brighten the color
+                                color = colors.white;
+                            }
+                            
+                            ctx.fillStyle = color;
+                            ctx.fillRect(
+                                offsetX + x * pixelSize, 
+                                offsetY + y * pixelSize, 
+                                pixelSize, 
+                                pixelSize
+                            );
+                        }
+                    }
+                }
+                
+                frame++;
+            }, 100); // Faster animation
+        }
+        
+        // Draw the shuttle pixel by pixel
+        function drawShuttle() {
+            const offsetX = Math.floor((canvas.width - shuttleDesign[0].length * pixelSize) / 2);
+            const offsetY = Math.floor((canvas.height - shuttleDesign.length * pixelSize) / 2);
+            
+            for (let y = 0; y < shuttleDesign.length; y++) {
+                for (let x = 0; x < shuttleDesign[y].length; x++) {
+                    const pixel = shuttleDesign[y][x];
+                    let color = colors.transparent;
+                    
+                    switch (pixel) {
+                        case 'X': color = colors.white; break;
+                        case 'R': color = colors.red; break;
+                        case 'D': color = colors.darkRed; break;
+                        case 'C': color = colors.cream; break;
+                        case 'O': color = colors.orange; break;
+                        case 'Y': color = colors.yellow; break;
+                        case 'F': color = colors.fire; break;
+                    }
+                    
+                    if (color !== null) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(
+                            offsetX + x * pixelSize, 
+                            offsetY + y * pixelSize, 
+                            pixelSize, 
+                            pixelSize
+                        );
+                    }
+                }
+            }
+        }
+        
+        // Draw the shuttle
+        drawShuttle();
+        
+        // Add animation to make it more visible
+        function animateThrusters() {
+            const thrusterRows = [40, 41, 42, 43, 44];
+            let frame = 0;
+            
+            setInterval(() => {
+                // Redraw only the thruster area
+                const offsetX = Math.floor((canvas.width - shuttleDesign[0].length * pixelSize) / 2);
+                const offsetY = Math.floor((canvas.height - shuttleDesign.length * pixelSize) / 2);
+                
+                for (let y of thrusterRows) {
+                    for (let x = 0; x < shuttleDesign[y].length; x++) {
+                        const pixel = shuttleDesign[y][x];
+                        let color = null;
+                        
+                        if (pixel === 'F' || pixel === 'O' || pixel === 'Y') {
+                            // Alternate colors for animation
+                            if (frame % 3 === 0) {
+                                color = pixel === 'F' ? colors.orange : 
+                                       pixel === 'O' ? colors.yellow : 
+                                       colors.fire;
+                            } else if (frame % 3 === 1) {
+                                color = pixel === 'F' ? colors.fire : 
+                                       pixel === 'O' ? colors.fire : 
+                                       colors.orange;
+                            } else {
+                                color = pixel === 'F' ? colors.yellow : 
+                                       pixel === 'O' ? colors.orange : 
+                                       colors.yellow;
+                            }
+                            
+                            ctx.fillStyle = color;
+                            ctx.fillRect(
+                                offsetX + x * pixelSize, 
+                                offsetY + y * pixelSize, 
+                                pixelSize, 
+                                pixelSize
+                            );
+                        }
+                    }
+                }
+                
+                frame++;
+            }, 150);
+        }
+        
+        // Start animation
+        animateThrusters();
+    </script>
+</body>
+</html>

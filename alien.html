@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixelated Alien Ship</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        .alien-container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            transform: scale(3);
+            transform-origin: center;
+            image-rendering: pixelated;
+        }
+        
+        .pixel {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #8a2be2;
+        }
+        
+        .pixel.eye {
+            background-color: #fff;
+        }
+        
+        .pixel.pupil {
+            background-color: #000;
+        }
+        
+        .pixel.ship {
+            background-color: #9370db;
+        }
+        
+        .pixel.light {
+            background-color: #ff00ff;
+            animation: blink 1s infinite alternate;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes hover {
+            0% { transform: translateY(0) scale(3); }
+            50% { transform: translateY(-5px) scale(3); }
+            100% { transform: translateY(0) scale(3); }
+        }
+        
+        .alien-container {
+            animation: hover 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="alien-container" id="alien">
+        <!-- Pixels will be added by JavaScript -->
+    </div>
+    
+    <script>
+        // Alien design in a pixel grid (10x10)
+        const alienDesign = [
+            '0000000000',
+            '0000110000',
+            '0001111000',
+            '0011111100',
+            '0111111110',
+            '0110110110',
+            '1111111111',
+            '1011111101',
+            '0111111110',
+            '0011111100'
+        ];
+        
+        // Color mapping
+        const colorMap = {
+            '0': 'transparent',
+            '1': '#8a2be2', // Purple body
+            '2': '#fff',    // Eyes
+            '3': '#000',    // Pupils
+            '4': '#9370db', // Ship
+            '5': '#ff00ff'  // Lights
+        };
+        
+        // Add eyes and details to the design
+        const detailedDesign = alienDesign.slice();
+        // Add eyes (position 2,5 and 7,5)
+        detailedDesign[2] = detailedDesign[2].substring(0, 2) + '2' + detailedDesign[2].substring(3, 7) + '2' + detailedDesign[2].substring(8);
+        // Add pupils (position 2,5 and 7,5)
+        detailedDesign[3] = detailedDesign[3].substring(0, 2) + '3' + detailedDesign[3].substring(3, 7) + '3' + detailedDesign[3].substring(8);
+        // Add ship base
+        detailedDesign[8] = '0' + '4'.repeat(8) + '0';
+        // Add lights
+        detailedDesign[9] = '00' + '5' + '0'.repeat(4) + '5' + '00';
+        
+        // Create the pixelated alien
+        const alienContainer = document.getElementById('alien');
+        
+        for (let y = 0; y < detailedDesign.length; y++) {
+            for (let x = 0; x < detailedDesign[y].length; x++) {
+                const pixelType = detailedDesign[y][x];
+                if (pixelType === '0') continue; // Skip transparent pixels
+                
+                const pixel = document.createElement('div');
+                pixel.className = 'pixel';
+                
+                // Add specific classes based on pixel type
+                if (pixelType === '2') pixel.classList.add('eye');
+                if (pixelType === '3') pixel.classList.add('pupil');
+                if (pixelType === '4') pixel.classList.add('ship');
+                if (pixelType === '5') pixel.classList.add('light');
+                
+                pixel.style.backgroundColor = colorMap[pixelType];
+                pixel.style.left = (x * 4) + 'px';
+                pixel.style.top = (y * 4) + 'px';
+                
+                alienContainer.appendChild(pixel);
+            }
+        }
+        
+        // Function to create an alien image for the game
+        function createAlienImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 40;
+            canvas.height = 40;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw each pixel to the canvas
+            const pixels = document.querySelectorAll('.pixel');
+            pixels.forEach(pixel => {
+                const x = parseInt(pixel.style.left) || 0;
+                const y = parseInt(pixel.style.top) || 0;
+                ctx.fillStyle = pixel.style.backgroundColor;
+                ctx.fillRect(x, y, 4, 4);
+            });
+            
+            return canvas;
+        }
+    </script>
+</body>
+</html>
