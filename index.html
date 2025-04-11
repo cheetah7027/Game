@@ -11,13 +11,14 @@
             display: block;
             margin: 0 auto;
             background: #000;
-            max-width: 100%;
+            width: 100vw;
+            height: 100vh;
             touch-action: none;
         }
         
         body {
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background: #111;
             color: white;
             font-family: Arial, sans-serif;
@@ -28,41 +29,24 @@
         }
         
         #score {
+            position: fixed;
+            top: 10px;
+            left: 0;
+            right: 0;
             text-align: center;
             font-size: 24px;
-            margin-bottom: 10px;
+            z-index: 100;
         }
         
         #mobileControls {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-        
-        .control-btn {
-            background: rgba(255, 255, 255, 0.3);
-            border: none;
-            padding: 20px;
-            border-radius: 50%;
-            color: white;
-            font-size: 24px;
-            touch-action: none;
+            display: none;
         }
     </style>
 </head>
 
 <body>
     <div id="score">Score: 0</div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="mobileControls">
-        <button class="control-btn" id="leftBtn">←</button>
-        <button class="control-btn" id="shootBtn">🔫</button>
-        <button class="control-btn" id="rightBtn">→</button>
-    </div>
+    <canvas id="gameCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
