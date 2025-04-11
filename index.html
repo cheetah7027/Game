@@ -59,6 +59,7 @@
         let player;
         let bullets = [];
         let enemies = [];
+        let enemyBullets = []; // Add enemy bullets array
         let stars = [];
         let shuttleImage;
         let alienImage;
@@ -248,8 +249,7 @@
                 'RRRRRRRRRRRCCCCCCCCCCCCCCCRRRRRRRRRRRR',
                 'RRRRRRRRRRRRCCCCCCCCCCCCCRRRRRRRRRRRRR',
                 'RRRRRRRRRRRRRCCCCCCCCCCCRRRRRRRRRRRRR',
-                'RRRRRRRRRRRRRRCCCCCCCCCRRRRRRRRRRRRRRR',
-                'RRRRRRRRRRRRRRRCCCCCCCRRRRRRRRRRRRRRRR',
+                'RRRRRRRRRRRRRRCCCCCCCRRRRRRRRRRRRRRRR',
                 '        CCCCCCCCCCCCCCCCCCC           ',
                 '        CCCCCCCCCCCCCCCCCCC           ',
                 '        CCCCCCCCCCCCCCCCCCC           ',
@@ -370,11 +370,37 @@
                 bullet.y -= bullet.speed;
                 return bullet.y > 0;
             });
+            
+            // Update enemy bullets
+            enemyBullets = enemyBullets.filter(bullet => {
+                bullet.y += bullet.speed;
+                
+                // Check collision with player
+                if (checkCollision(bullet, player) && !gameOver) {
+                    gameOver = true;
+                    restartButton.style.display = 'block';
+                    return false;
+                }
+                
+                return bullet.y < canvas.height;
+            });
 
             // Update enemies with proper collision detection
             for (let i = enemies.length - 1; i >= 0; i--) {
                 const enemy = enemies[i];
                 enemy.y += enemy.speed;
+
+                // Random chance for enemy to shoot
+                if (Math.random() < 0.005 && !gameOver) { // 0.5% chance per frame
+                    enemyBullets.push({
+                        x: enemy.x + enemy.width / 2,
+                        y: enemy.y + enemy.height,
+                        width: 4,
+                        height: 10,
+                        speed: 5,
+                        color: '#ff00ff' // Magenta color for enemy bullets
+                    });
+                }
 
                 // Check bullet collisions
                 for (let j = bullets.length - 1; j >= 0; j--) {
@@ -417,6 +443,18 @@
             bullets.forEach(bullet => {
                 ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
             });
+            
+            // Draw enemy bullets
+            enemyBullets.forEach(bullet => {
+                ctx.fillStyle = bullet.color;
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                
+                // Add glow effect to enemy bullets
+                ctx.shadowColor = bullet.color;
+                ctx.shadowBlur = 5;
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                ctx.shadowBlur = 0; // Reset shadow
+            });
 
             // Draw enemies using animated alien image
             enemies.forEach(enemy => {
@@ -445,6 +483,7 @@
             score = 0;
             gameOver = false;
             bullets = [];
+            enemyBullets = []; // Clear enemy bullets
             enemies = [];
             player.x = canvas.width / 2;
             scoreDisplay.textContent = 'Score: 0';
