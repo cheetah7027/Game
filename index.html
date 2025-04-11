@@ -390,8 +390,8 @@
                 const enemy = enemies[i];
                 enemy.y += enemy.speed;
 
-                // Random chance for enemy to shoot
-                if (Math.random() < 0.005 && !gameOver) { // 0.5% chance per frame
+                // Random chance for enemy to shoot - increased from 0.005 to 0.02 (4x faster)
+                if (Math.random() < 0.02 && !gameOver) { // 2% chance per frame
                     enemyBullets.push({
                         x: enemy.x + enemy.width / 2,
                         y: enemy.y + enemy.height,
