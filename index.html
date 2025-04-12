@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -11,10 +12,12 @@
             background: #000;
             overflow: hidden;
         }
+        
         canvas {
             display: block;
             touch-action: none;
         }
+        
         #score {
             position: fixed;
             top: 20px;
@@ -25,6 +28,7 @@
             font-size: 24px;
             z-index: 100;
         }
+        
         #restartButton {
             position: fixed;
             bottom: 40%;
@@ -42,6 +46,7 @@
         }
     </style>
 </head>
+
 <body>
     <div id="score">Score: 0</div>
     <canvas id="gameCanvas"></canvas>
@@ -59,49 +64,57 @@
         let player;
         let bullets = [];
         let enemies = [];
-        let enemyBullets = []; // Add enemy bullets array
+        let enemyBullets = []; 
         let stars = [];
         let shuttleImage;
         let alienImage;
-
+        
+        // Sound effects
+        const laserSound = new Audio('laser.mp3');
+        laserSound.volume = 0.7; // Increase volume to 70%
+        
+        // Add explosion sound for alien destruction
+        const explosionSound = new Audio('explosion.mp3');
+        explosionSound.volume = 0.5; // Set volume to 50%
+ 
         // Create pixelated alien
         function createAlienImage() {
             const alienCanvas = document.createElement('canvas');
             alienCanvas.width = 40;
             alienCanvas.height = 40;
             const alienCtx = alienCanvas.getContext('2d');
-            
+
             // Define colors for the alien
             const colors = {
-                body: '#8a2be2',      // Purple
-                eye: '#FFFFFF',       // White
-                pupil: '#000000',     // Black
-                ship: '#9370db',      // Light purple
-                light: '#ff00ff'      // Magenta
+                body: '#8a2be2', // Purple
+                eye: '#FFFFFF', // White
+                pupil: '#000000', // Black
+                ship: '#9370db', // Light purple
+                light: '#ff00ff' // Magenta
             };
-            
+
             // Create multiple frames for animation
             const frames = [];
-            
+
             // Create 4 animation frames
             for (let frame = 0; frame < 4; frame++) {
                 const frameCanvas = document.createElement('canvas');
                 frameCanvas.width = 40;
                 frameCanvas.height = 40;
                 const frameCtx = frameCanvas.getContext('2d');
-                
+
                 // Draw alien body (saucer shape)
                 frameCtx.fillStyle = colors.ship;
                 frameCtx.beginPath();
                 frameCtx.ellipse(20, 30, 20, 8, 0, 0, Math.PI * 2);
                 frameCtx.fill();
-                
+
                 // Draw alien head
                 frameCtx.fillStyle = colors.body;
                 frameCtx.beginPath();
                 frameCtx.ellipse(20, 15, 12, 15, 0, 0, Math.PI);
                 frameCtx.fill();
-                
+
                 // Draw eyes - blink on frame 2
                 frameCtx.fillStyle = colors.eye;
                 if (frame !== 2) {
@@ -109,17 +122,17 @@
                     frameCtx.beginPath();
                     frameCtx.ellipse(14, 15, 4, 4, 0, 0, Math.PI * 2);
                     frameCtx.fill();
-                    
+
                     frameCtx.beginPath();
                     frameCtx.ellipse(26, 15, 4, 4, 0, 0, Math.PI * 2);
                     frameCtx.fill();
-                    
+
                     // Draw pupils
                     frameCtx.fillStyle = colors.pupil;
                     frameCtx.beginPath();
                     frameCtx.ellipse(14, 15, 2, 2, 0, 0, Math.PI * 2);
                     frameCtx.fill();
-                    
+
                     frameCtx.beginPath();
                     frameCtx.ellipse(26, 15, 2, 2, 0, 0, Math.PI * 2);
                     frameCtx.fill();
@@ -128,41 +141,41 @@
                     frameCtx.fillRect(10, 15, 8, 1);
                     frameCtx.fillRect(22, 15, 8, 1);
                 }
-                
+
                 // Draw lights on the ship - different for each frame
                 frameCtx.fillStyle = colors.light;
-                
+
                 // First light
                 if (frame !== 0) {
                     frameCtx.beginPath();
                     frameCtx.ellipse(8, 30, 3, 3, 0, 0, Math.PI * 2);
                     frameCtx.fill();
                 }
-                
+
                 // Middle light
                 if (frame !== 1) {
                     frameCtx.beginPath();
                     frameCtx.ellipse(20, 32, 3, 3, 0, 0, Math.PI * 2);
                     frameCtx.fill();
                 }
-                
+
                 // Last light
                 if (frame !== 2) {
                     frameCtx.beginPath();
                     frameCtx.ellipse(32, 30, 3, 3, 0, 0, Math.PI * 2);
                     frameCtx.fill();
                 }
-                
+
                 // Add glow effect to lights
                 frameCtx.shadowColor = colors.light;
                 frameCtx.shadowBlur = 10;
                 frameCtx.beginPath();
                 frameCtx.arc(20, 30, 1, 0, Math.PI * 2);
                 frameCtx.fill();
-                
+
                 frames.push(frameCanvas);
             }
-            
+
             return frames;
         }
 
@@ -170,13 +183,13 @@
         function init() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
+
             // Create pixelated shuttle image
             shuttleImage = createShuttleImage();
-            
+
             // Create pixelated alien image frames
             alienImage = createAlienImage();
-            
+
             player = {
                 x: canvas.width / 2 - 25,
                 y: canvas.height - 100,
@@ -201,7 +214,7 @@
             shuttleCanvas.width = 50;
             shuttleCanvas.height = 50;
             const shuttleCtx = shuttleCanvas.getContext('2d');
-            
+
             // Define colors
             const colors = {
                 transparent: null,
@@ -212,7 +225,7 @@
                 yellow: '#FFFF00',
                 fire: '#FF6600'
             };
-            
+
             // Shuttle design (pixel art)
             const shuttleDesign = [
                 '                  X                   ',
@@ -260,36 +273,48 @@
                 '        YYYYYY       YYYYYY           ',
                 '         YYYY         YYYY            '
             ];
-            
+
             // Draw the shuttle pixel by pixel
             const pixelSize = 1;
             for (let y = 0; y < shuttleDesign.length; y++) {
                 for (let x = 0; x < shuttleDesign[y].length; x++) {
                     const pixel = shuttleDesign[y][x];
                     let color = null;
-                    
+
                     switch (pixel) {
-                        case 'X': color = colors.white; break;
-                        case 'R': color = colors.red; break;
-                        case 'C': color = colors.cream; break;
-                        case 'O': color = colors.orange; break;
-                        case 'Y': color = colors.yellow; break;
-                        case 'F': color = colors.fire; break;
+                        case 'X':
+                            color = colors.white;
+                            break;
+                        case 'R':
+                            color = colors.red;
+                            break;
+                        case 'C':
+                            color = colors.cream;
+                            break;
+                        case 'O':
+                            color = colors.orange;
+                            break;
+                        case 'Y':
+                            color = colors.yellow;
+                            break;
+                        case 'F':
+                            color = colors.fire;
+                            break;
                     }
-                    
+
                     if (color !== null) {
                         shuttleCtx.fillStyle = color;
                         shuttleCtx.fillRect(x, y, pixelSize, pixelSize);
                     }
                 }
             }
-            
+
             return shuttleCanvas;
         }
 
         // Handle input
         let touchX = null;
-        
+
         canvas.addEventListener('touchstart', e => {
             e.preventDefault();
             const touch = e.touches[0];
@@ -300,7 +325,7 @@
         canvas.addEventListener('touchmove', e => {
             e.preventDefault();
             if (touchX === null) return;
-            
+
             const touch = e.touches[0];
             const deltaX = touch.clientX - touchX;
             player.x = Math.max(0, Math.min(canvas.width - player.width, player.x + deltaX));
@@ -316,7 +341,7 @@
             if (e.key === ' ') shoot();
             if (e.key === 'ArrowLeft') player.x -= player.speed;
             if (e.key === 'ArrowRight') player.x += player.speed;
-            
+
             player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
         });
 
@@ -329,6 +354,10 @@
                     height: 10,
                     speed: 7
                 });
+                
+                // Play laser sound
+                laserSound.currentTime = 0; // Reset sound to start
+                laserSound.play().catch(e => console.log("Audio play failed:", e));
             }
         }
 
@@ -347,15 +376,15 @@
 
         function checkCollision(rect1, rect2) {
             return rect1.x < rect2.x + rect2.width &&
-                   rect1.x + rect1.width > rect2.x &&
-                   rect1.y < rect2.y + rect2.height &&
-                   rect1.y + rect1.height > rect2.y;
+                rect1.x + rect1.width > rect2.x &&
+                rect1.y < rect2.y + rect2.height &&
+                rect1.y + rect1.height > rect2.y;
         }
 
         // Update enemies
         function update() {
             if (gameOver) return;
-            
+
             // Update stars
             stars.forEach(star => {
                 star.y += star.speed;
@@ -370,18 +399,18 @@
                 bullet.y -= bullet.speed;
                 return bullet.y > 0;
             });
-            
+
             // Update enemy bullets
             enemyBullets = enemyBullets.filter(bullet => {
                 bullet.y += bullet.speed;
-                
+
                 // Check collision with player
                 if (checkCollision(bullet, player) && !gameOver) {
                     gameOver = true;
                     restartButton.style.display = 'block';
                     return false;
                 }
-                
+
                 return bullet.y < canvas.height;
             });
 
@@ -410,6 +439,11 @@
                         bullets.splice(j, 1);
                         score += 10;
                         scoreDisplay.textContent = `Score: ${score}`;
+                        
+                        // Play explosion sound when alien is destroyed
+                        explosionSound.currentTime = 0;
+                        explosionSound.play().catch(e => console.log("Audio play failed:", e));
+                        
                         break;
                     }
                 }
@@ -443,12 +477,12 @@
             bullets.forEach(bullet => {
                 ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
             });
-            
+
             // Draw enemy bullets
             enemyBullets.forEach(bullet => {
                 ctx.fillStyle = bullet.color;
                 ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-                
+
                 // Add glow effect to enemy bullets
                 ctx.shadowColor = bullet.color;
                 ctx.shadowBlur = 5;
@@ -460,7 +494,7 @@
             enemies.forEach(enemy => {
                 // Get current animation frame (4 frames total)
                 const frameIndex = Math.floor(Date.now() / 250) % 4;
-                
+
                 // Animate the alien by slightly moving it up and down
                 const offsetY = Math.sin(Date.now() / 200 + enemy.frame) * 3;
                 ctx.drawImage(alienImage[frameIndex], enemy.x, enemy.y + offsetY, enemy.width, enemy.height);
@@ -473,9 +507,9 @@
                 ctx.fillStyle = '#fff';
                 ctx.font = '48px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 50);
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
                 ctx.font = '24px Arial';
-                ctx.fillText(`Score: ${score}`, canvas.width/2, canvas.height/2);
+                ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2);
             }
         }
 
@@ -508,9 +542,10 @@
         init();
         setInterval(spawnEnemy, 1500);
         gameLoop();
-        
+
         // Handle restart button
         restartButton.addEventListener('click', resetGame);
     </script>
 </body>
+
 </html>
